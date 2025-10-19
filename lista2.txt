@@ -416,6 +416,13 @@ http://127.0.0.1:6878/ace/getstream?id=0ce88d9e7273fddbc9b49f578b6b255513697139
 http://127.0.0.1:6878/ace/getstream?id=0f86119f233fd64fe85cc0b4a9059590d06d242a
 #EXTINF:-1 tvg-logo="" tvg-id="" group-title="ACB", Baloncesto2 --> NEW ERA
 http://127.0.0.1:6878/ace/getstream?id=34944c86bad01c3963ef113c28c033858085adb7
+#EXTINF:-1 tvg-logo="" tvg-id="" group-title="ACB", Prueba1 --> NEW ERA
+http://127.0.0.1:6878/ace/getstream?id=87bb542f974b6b9e89d0f2e20ed6dc93426f4be0
+#EXTINF:-1 tvg-logo="" tvg-id="" group-title="ACB", Prueba2 --> NEW ERA
+http://127.0.0.1:6878/ace/getstream?id=a4f072c9b614323ac1258a175f868a909ea3c8cd
+
+
+
 
 
 
