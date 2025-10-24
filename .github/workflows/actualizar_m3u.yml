@@ -40,7 +40,7 @@ jobs:
 
       - name: Comprobar cambios y hacer commit
         run: |
-          NOMBRE_ARCHIVO="lista2.txt
+          NOMBRE_ARCHIVO="lista2.txt"
           
           # Añade el archivo al staging area
           git add $NOMBRE_ARCHIVO
