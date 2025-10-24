@@ -1,0 +1,56 @@
+name: Actualizar Lista IPTV
+
+# Define cuándo se ejecutará el flujo de trabajo
+on:
+  schedule:
+    # Ejecuta cada hora (minuto 0 de cada hora)
+    - cron: '0 * * * *'
+  # Permite la ejecución manual desde la interfaz de GitHub
+  workflow_dispatch:
+
+# Define las tareas que se ejecutarán
+jobs:
+  update-file:
+    # El ambiente donde se ejecutará (una máquina virtual Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        # Descarga el código del repositorio
+        uses: actions/checkout@v4
+        with:
+          # Usa el token predeterminado para permitir commits
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Descargar nuevo contenido
+        run: |
+          # URL del archivo m3u original
+          URL_M3U="https://ipfs.io/ipns/k2k4r8oqlcjxsritt5mczkcn4mmvcmymbqw7113fz2flkrerfwfps004/data/listas/lista_iptv.m3u"
+          # Nombre del archivo en tu repositorio
+          NOMBRE_ARCHIVO="lista2.txt"
+
+          # Descarga el archivo m3u y lo guarda con el nombre definido
+          # -s (silencioso), -o (guardar salida a archivo)
+          curl -s -o $NOMBRE_ARCHIVO $URL_M3U
+
+      - name: Configurar Git
+        run: |
+          # Establece la identidad de quien hace el commit (GitHub Actions)
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Comprobar cambios y hacer commit
+        run: |
+          NOMBRE_ARCHIVO="lista2.txt
+          
+          # Añade el archivo al staging area
+          git add $NOMBRE_ARCHIVO
+          
+          # Verifica si hay cambios comparando el staging area con la rama actual
+          if ! git diff --cached --exit-code; then
+            echo "::notice title=Sin Cambios::El archivo $NOMBRE_ARCHIVO está al día, no se requiere actualización."
+          else
+            # Solo hace commit y push si hay cambios
+            git commit -m "Actualización automática de $NOMBRE_ARCHIVO [skip ci]"
+            git push
+            echo "::notice title=Archivo Actualizado::El archivo $NOMBRE_ARCHIVO ha sido actualizado y pusheado."
+          fi
