@@ -4,7 +4,7 @@ name: Actualizar Lista IPTV
 on:
   schedule:
     # Ejecuta cada hora (minuto 0 de cada hora)
-    - cron: '0 * * * *'
+    - cron: '0,30 * * * *'
   # Permite la ejecución manual desde la interfaz de GitHub
   workflow_dispatch:
 
