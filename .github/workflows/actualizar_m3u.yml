@@ -12,7 +12,7 @@ permissions:
 jobs:
   sync-list:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,16 +24,16 @@ jobs:
       - name: Validate M3U file
         run: |
           if [ ! -s remote_list.m3u ]; then
-            echo "Error: el archivo descargado está vacío."
+            echo "::error title=Archivo vacío::El archivo descargado está vacío o no disponible."
             exit 1
           fi
 
           if ! head -n 1 remote_list.m3u | grep -q "#EXTM3U"; then
-            echo "Error: el archivo no parece ser un M3U válido."
+            echo "::error title=Archivo no válido::El archivo descargado no parece ser un M3U válido."
             exit 1
           fi
 
-          echo "Validación exitosa: el archivo es un M3U válido."
+          echo "::notice title=Validación exitosa::El archivo descargado es un M3U válido."
 
       - name: Compare and update if different
         run: |
@@ -42,11 +42,8 @@ jobs:
           fi
 
           if ! cmp -s remote_list.m3u lista2.txt; then
-            echo "Se detectaron cambios. Actualizando lista2.txt..."
-            cp remote_list.m3u lista2.txt
             echo "CHANGES_DETECTED=true" >> $GITHUB_ENV
           else
-            echo "No hay cambios en el archivo."
             echo "CHANGES_DETECTED=false" >> $GITHUB_ENV
           fi
 
@@ -59,6 +56,17 @@ jobs:
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
 
+      - name: Show summary message
+        run: |
+          if [ "${{ env.CHANGES_DETECTED }}" == "true" ]; then
+            echo "::notice title=Archivo Actualizado::Se detectaron cambios y se actualizó el archivo lista2.txt."
+            echo "### ✅ Archivo actualizado correctamente" >> $GITHUB_STEP_SUMMARY
+            echo "Se han detectado diferencias y se ha reemplazado el archivo *lista2.txt* con el contenido más nuevo." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::notice title=Sin Cambios::El archivo lista2.txt ya está sincronizado."
+            echo "### ℹ️ No se detectaron cambios" >> $GITHUB_STEP_SUMMARY
+            echo "El archivo *lista2.txt* coincide con la versión más reciente descargada del origen." >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Clean up temporary files
         run: rm -f remote_list.m3u
-
