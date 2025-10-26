@@ -1,60 +1,64 @@
-name: Actualizar Lista IPTV
+name: Sync IPTV List
 
-# Define cuándo se ejecutará el flujo de trabajo
 on:
   schedule:
-    # Ejecuta cada hora (minuto 0 de cada hora)
-    - cron: '0,30 * * * *'
-  # Permite la ejecución manual desde la interfaz de GitHub
+    # Ejecutar cada 30 minutos
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
-# Define las tareas que se ejecutarán
+permissions:
+  contents: write
+
 jobs:
-  update-file:
-    # El ambiente donde se ejecutará (una máquina virtual Linux)
+  sync-list:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout del repositorio
-        # Descarga el código del repositorio
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          # Usa el token predeterminado para permitir commits
-          token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Descargar nuevo contenido
+
+      - name: Download remote IPTV list
         run: |
-          URL_M3U="https://ipfs.io/ipns/k2k4r8oqlcjxsritt5mczkcn4mmvcmymbqw7113fz2flkrerfwfps004/data/listas/lista_iptv.m3u"
-          NOMBRE_ARCHIVO="lista2.txt"
+          curl -s -o remote_list.m3u "https://ipfs.io/ipns/k2k4r8oqlcjxsritt5mczkcn4mmvcmymbqw7113fz2flkrerfwfps004/data/listas/lista_iptv.m3u"
 
-          # 1. Descargar el archivo a un archivo temporal
-          curl -s $URL_M3U > temp_list.txt
-
-          # 2. Normalizar terminaciones de línea (convierte CRLF a LF)
-          # Esto elimina el retorno de carro '\r' que puede causar el problema.
-          sed 's/\r$//' temp_list.txt > $NOMBRE_ARCHIVO
-
-          # 3. Limpiar el archivo temporal
-          rm temp_list.txt
-
-      - name: Configurar Git
+      - name: Validate M3U file
         run: |
-          # Establece la identidad de quien hace el commit (GitHub Actions)
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-
-      - name: Comprobar cambios y hacer commit
-        run: |
-          NOMBRE_ARCHIVO="lista2.txt"
-          
-          # Añade el archivo al staging area
-          git add $NOMBRE_ARCHIVO
-          
-          # Verifica si hay cambios comparando el staging area con la rama actual
-          if ! git diff --cached --exit-code; then
-            echo "::notice title=Sin Cambios::El archivo $NOMBRE_ARCHIVO está al día, no se requiere actualización."
-          else
-            # Solo hace commit y push si hay cambios
-            git commit -m "Actualización automática de $NOMBRE_ARCHIVO [skip ci]"
-            git push
-            echo "::notice title=Archivo Actualizado::El archivo $NOMBRE_ARCHIVO ha sido actualizado y pusheado."
+          if [ ! -s remote_list.m3u ]; then
+            echo "Error: el archivo descargado está vacío."
+            exit 1
           fi
+
+          if ! head -n 1 remote_list.m3u | grep -q "#EXTM3U"; then
+            echo "Error: el archivo no parece ser un M3U válido."
+            exit 1
+          fi
+
+          echo "Validación exitosa: el archivo es un M3U válido."
+
+      - name: Compare and update if different
+        run: |
+          if [ ! -f lista2.txt ]; then
+            touch lista2.txt
+          fi
+
+          if ! cmp -s remote_list.m3u lista2.txt; then
+            echo "Se detectaron cambios. Actualizando lista2.txt..."
+            cp remote_list.m3u lista2.txt
+            echo "CHANGES_DETECTED=true" >> $GITHUB_ENV
+          else
+            echo "No hay cambios en el archivo."
+            echo "CHANGES_DETECTED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Commit changes if any
+        if: env.CHANGES_DETECTED == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update IPTV list from remote source"
+          file_pattern: lista2.txt
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Clean up temporary files
+        run: rm -f remote_list.m3u
+
