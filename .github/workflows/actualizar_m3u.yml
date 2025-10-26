@@ -23,14 +23,18 @@ jobs:
           
       - name: Descargar nuevo contenido
         run: |
-          # URL del archivo m3u original
           URL_M3U="https://ipfs.io/ipns/k2k4r8oqlcjxsritt5mczkcn4mmvcmymbqw7113fz2flkrerfwfps004/data/listas/lista_iptv.m3u"
-          # Nombre del archivo en tu repositorio
           NOMBRE_ARCHIVO="lista2.txt"
 
-          # Descarga el archivo m3u y lo guarda con el nombre definido
-          # -s (silencioso), -o (guardar salida a archivo)
-          curl -s -o $NOMBRE_ARCHIVO $URL_M3U
+          # 1. Descargar el archivo a un archivo temporal
+          curl -s $URL_M3U > temp_list.txt
+
+          # 2. Normalizar terminaciones de línea (convierte CRLF a LF)
+          # Esto elimina el retorno de carro '\r' que puede causar el problema.
+          sed 's/\r$//' temp_list.txt > $NOMBRE_ARCHIVO
+
+          # 3. Limpiar el archivo temporal
+          rm temp_list.txt
 
       - name: Configurar Git
         run: |
