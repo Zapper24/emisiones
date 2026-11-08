@@ -295,4 +295,4 @@ http://127.0.0.1:6878/ace/getstream?id=1eab03b54a1286d28b5d048b9b9d04e484a3a47a
 #EXTINF:-1 tvg-logo="https://cdn2.downdetector.com/static/uploads/logo/download-2_kvCjesa.png" group-title="UFC",Paramount+ UFC *
 http://127.0.0.1:6878/ace/getstream?id=89affda5ac7471f1a1e0b8e8cfdb3fa166af4a33
 #EXTINF:-1 tvg-logo="https://cdn2.downdetector.com/static/uploads/logo/download-2_kvCjesa.png" group-title="UFC",Paramount+ UFC *
-http://127.0.0.1:6878/ace/getstream?id=9b4da1832878e52c4857c33f282418519fbbb252
+http://127.0.0.1:6878/ace/getstream?id=c21d60fa884b24f3cedcb1110b84ac2bcb0c2d19
